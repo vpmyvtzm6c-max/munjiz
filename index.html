@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مُنجز | خطط يومك</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Tahoma",sans-serif;background:#f4f7fc;color:#172b4d}
+header{background:#fff;padding:22px 18px;border-bottom:1px solid #e5eaf3}
+.wrap{max-width:850px;margin:auto}
+.logo{color:#246bfd;font-size:27px;font-weight:800}
+header p{margin:8px 0 0;color:#71809b}
+main{max-width:850px;margin:22px auto;padding:0 14px}
+h2{font-size:21px;margin:0 0 15px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px}
+.stat,.panel{background:white;border:1px solid #e4eaf4;border-radius:17px;padding:17px}
+.stat small{color:#71809b}
+.stat strong{display:block;font-size:25px;color:#246bfd;margin-top:8px}
+.panel{margin-bottom:20px}
+form{display:flex;gap:9px;margin-bottom:16px}
+input,select,button{font:inherit;border-radius:11px;padding:12px;border:1px solid #dce4f1}
+input{min-width:0;flex:1}
+button{background:#246bfd;color:white;border:0;font-weight:700;cursor:pointer}
+.task{display:flex;align-items:center;gap:10px;padding:13px 0;border-bottom:1px solid #edf0f6}
+.task:last-child{border-bottom:0}
+.task span{flex:1;overflow-wrap:anywhere}
+.task.done span{text-decoration:line-through;color:#8793a8}
+.task input{flex:0 0 auto;width:19px;height:19px}
+.del{background:#fff0f0;color:#d43e4c;padding:8px 11px}
+.empty{text-align:center;color:#8a96aa;padding:20px 0}
+.tools{display:flex;gap:9px;flex-wrap:wrap}
+.tools button{background:#eaf1ff;color:#246bfd}
+#clock{font-size:42px;text-align:center;font-weight:800;margin:15px}
+.center{text-align:center}
+@media(max-width:480px){form{flex-wrap:wrap}form input{flex-basis:100%}.stats{gap:7px}.stat{padding:12px}.stat strong{font-size:22px}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><div class="logo">✦ مُنجز</div><p>رتّب مهامك، ونظّم وقتك، وأنجز أهدافك.</p></div></header>
+<main>
+<div class="stats">
+<div class="stat"><small>كل المهام</small><strong id="total">0</strong></div>
+<div class="stat"><small>المكتملة</small><strong id="completed">0</strong></div>
+<div class="stat"><small>المتبقية</small><strong id="remaining">0</strong></div>
+</div>
+<section class="panel">
+<h2>مهامي اليوم 📝</h2>
+<form id="taskForm">
+<input id="taskInput" placeholder="وش ودك تنجز اليوم؟" required maxlength="120">
+<button type="submit">+ إضافة</button>
+</form>
+<div id="tasks"><div class="empty">أضف أول مهمة وابدأ إنجازك ✨</div></div>
+</section>
+<section class="panel">
+<h2>جدولي الأسبوعي 📅</h2>
+<p style="color:#71809b">اكتب أهم شيء عندك لكل يوم واحفظه تلقائيًا.</p>
+<div id="schedule"></div>
+</section>
+<section class="panel center">
+<h2>وقت التركيز ⏱️</h2>
+<div id="clock">25:00</div>
+<div class="tools" style="justify-content:center">
+<button id="start">ابدأ</button>
+<button id="pause">إيقاف مؤقت</button>
+<button id="reset">إعادة</button>
+</div>
+</section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+let tasks=JSON.parse(localStorage.getItem('munjizTasks')||'[]');
+function save(){localStorage.setItem('munjizTasks',JSON.stringify(tasks));render()}
+function render(){
+$('total').textContent=tasks.length;
+$('completed').textContent=tasks.filter(t=>t.done).length;
+$('remaining').textContent=tasks.filter(t=>!t.done).length;
+$('tasks').innerHTML='';
+if(!tasks.length){$('tasks').innerHTML='<div class="empty">أضف أول مهمة وابدأ إنجازك ✨</div>';return}
+tasks.forEach((t,i)=>{
+let row=document.createElement('div');row.className='task'+(t.done?' done':'');
+let check=document.createElement('input');check.type='checkbox';check.checked=t.done;
+check.addEventListener('change',()=>{tasks[i].done=check.checked;save()});
+let span=document.createElement('span');span.textContent=t.text;
+let del=document.createElement('button');del.className='del';del.textContent='حذف';
+del.addEventListener('click',()=>{tasks.splice(i,1);save()});
+row.append(check,span,del);$('tasks').append(row);
+});
+}
+$('taskForm').addEventListener('submit',e=>{e.preventDefault();let text=$('taskInput').value.trim();if(text){tasks.push({text,done:false});$('taskInput').value='';save()}});
+const days=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+$('schedule').innerHTML=days.map(d=>'<div style="display:flex;align-items:center;gap:10px;margin:9px 0"><label style="min-width:65px">'+d+'</label><input data-day="'+d+'" placeholder="خطة اليوم..." style="width:100%;min-width:0"></div>').join('');
+document.querySelectorAll('[data-day]').forEach(el=>{el.value=localStorage.getItem('munjizDay'+el.dataset.day)||'';el.addEventListener('input',()=>localStorage.setItem('munjizDay'+el.dataset.day,el.value))});
+let seconds=1500,timer=null;
+function showTime(){$('clock').textContent=String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0')}
+$('start').onclick=()=>{if(timer)return;timer=setInterval(()=>{if(seconds>0){seconds--;showTime()}else{clearInterval(timer);timer=null;alert('أحسنت! انتهى وقت التركيز 🎉')}},1000)};
+$('pause').onclick=()=>{clearInterval(timer);timer=null};
+$('reset').onclick=()=>{clearInterval(timer);timer=null;seconds=1500;showTime()};
+render();showTime();
+</script>
+</body>
+</html>
