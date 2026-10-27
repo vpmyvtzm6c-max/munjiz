@@ -1,875 +1,380 @@
 <!DOCTYPE html>
-
 <html lang="ar" dir="rtl">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#246bfd">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="مُنجز">
 <link rel="manifest" href="./manifest.json">
 <link rel="icon" href="./icon.svg" type="image/svg+xml">
-
 <title>مُنجز | خطط يومك</title>
-
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <style>
-
 *{box-sizing:border-box}
-
-body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Tahoma",sans-serif;background:#f4f7fc;color:#172b4d}
-
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Tahoma,sans-serif;background:#f4f7fc;color:#172b4d}
 header{background:#fff;padding:22px 18px;border-bottom:1px solid #e5eaf3}
-
 .wrap{max-width:850px;margin:auto}
-
 .logo{color:#246bfd;font-size:27px;font-weight:800}
-
 header p{margin:8px 0 0;color:#71809b}
-
 main{max-width:850px;margin:22px auto;padding:0 14px}
-
 h2{font-size:21px;margin:0 0 15px}
-
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px}
-
-.stat,.panel{background:white;border:1px solid #e4eaf4;border-radius:17px;padding:17px}
-
+.stat,.panel{background:#fff;border:1px solid #e4eaf4;border-radius:17px;padding:17px}
 .stat small{color:#71809b}
-
 .stat strong{display:block;font-size:25px;color:#246bfd;margin-top:8px}
-
 .panel{margin-bottom:20px}
-
 form{display:flex;gap:9px;margin-bottom:16px}
-
-input,select,button{font:inherit;border-radius:11px;padding:12px;border:1px solid #dce4f1}
-
-input{min-width:0;flex:1}
-
-button{background:#246bfd;color:white;border:0;font-weight:700;cursor:pointer}
-
+input,button{font:inherit;border-radius:11px;padding:12px;border:1px solid #dce4f1}
+input{min-width:0;flex:1;background:#fff;color:#172b4d}
+button{background:#246bfd;color:#fff;border:0;font-weight:700;cursor:pointer}
 button:disabled{opacity:.55;cursor:wait}
-
 .task{display:flex;align-items:center;gap:10px;padding:13px 0;border-bottom:1px solid #edf0f6}
-
-.task:last-child{border-bottom:0}
-
 .task span{flex:1;overflow-wrap:anywhere}
-
 .task.done span{text-decoration:line-through;color:#8793a8}
-
 .task input{flex:0 0 auto;width:19px;height:19px}
-
 .del{background:#fff0f0;color:#d43e4c;padding:8px 11px}
-
 .empty{text-align:center;color:#8a96aa;padding:20px 0}
-
 .tools{display:flex;gap:9px;flex-wrap:wrap}
-
-.tools button{background:#eaf1ff;color:#246bfd}
-
+.tools button,.secondary{background:#eaf1ff;color:#246bfd}
 #clock{font-size:42px;text-align:center;font-weight:800;margin:15px}
-
 .center{text-align:center}
-
 .auth-panel{max-width:520px;margin:22px auto}
-
 .auth-panel form{flex-wrap:wrap}
-
 .auth-panel input{width:100%;flex-basis:100%}
-
 .auth-actions{display:flex;gap:9px;flex-wrap:wrap}
-
-.secondary{background:#eaf1ff;color:#246bfd}
-
-#status{margin:10px 0;color:#52627a;line-height:1.7}
-
+#status{margin:10px 0;color:#52627a;line-height:1.7;overflow-wrap:anywhere}
 #app{display:none}
-
 #userBar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px}
-
 .small{font-size:13px;color:#71809b;line-height:1.6}
-
 #schedule input{width:100%;min-width:0}
-
+.error-text{color:#c0394b!important}
+.success-text{color:#237a45!important}
 @media(max-width:480px){
-
 form{flex-wrap:wrap}
-
 form input{flex-basis:100%}
-
 .stats{gap:7px}
-
 .stat{padding:12px}
-
 .stat strong{font-size:22px}
-
 }
-
 </style>
-
 </head>
-
 <body>
-
 <header>
-
 <div class="wrap">
-
 <div class="logo">✦ مُنجز</div>
-
 <p>رتّب مهامك، ونظّم وقتك، وأنجز أهدافك.</p>
-
 </div>
-
 </header>
 
 <section id="auth" class="panel auth-panel">
-
 <h2>حسابك في مُنجز</h2>
-
 <p class="small">أنشئ حسابًا أو سجّل الدخول للوصول إلى مهامك من أجهزتك.</p>
-
 <form id="authForm">
-
-<input id="email" type="email" autocomplete="email" placeholder="البريد الإلكتروني" required>
-
+<input id="email" type="email" autocomplete="username" inputmode="email" placeholder="البريد الإلكتروني" required>
 <input id="password" type="password" autocomplete="current-password" placeholder="كلمة المرور (6 أحرف على الأقل)" minlength="6" required>
-
 <div class="auth-actions">
-
 <button id="loginBtn" type="submit">تسجيل الدخول</button>
-
 <button id="signupBtn" type="button" class="secondary">إنشاء حساب جديد</button>
-
 <button id="resetBtn" type="button" class="secondary">نسيت كلمة المرور؟</button>
-
 </div>
-
 </form>
-
-<div id="status" role="status" aria-live="polite"></div>
-
+<div id="status" role="status" aria-live="polite">جارٍ تجهيز مُنجز...</div>
 </section>
 
 <main id="app">
-
 <div id="userBar">
-
 <span id="userEmail"></span>
-
-<button id="logoutBtn" class="secondary">تسجيل الخروج</button>
-
+<button id="logoutBtn" class="secondary" type="button">تسجيل الخروج</button>
 </div>
-
 <div class="stats">
-
 <div class="stat"><small>كل المهام</small><strong id="total">0</strong></div>
-
 <div class="stat"><small>المكتملة</small><strong id="completed">0</strong></div>
-
 <div class="stat"><small>المتبقية</small><strong id="remaining">0</strong></div>
-
 </div>
-
 <section class="panel">
-
 <h2>مهامي اليوم 📝</h2>
-
 <form id="taskForm">
-
 <input id="taskInput" placeholder="وش ودك تنجز اليوم؟" required maxlength="120">
-
-<button type="submit">+ إضافة</button>
-
+<button id="addTaskBtn" type="submit">+ إضافة</button>
 </form>
-
 <div id="tasks"><div class="empty">جارٍ تحميل المهام...</div></div>
-
 </section>
-
 <section class="panel">
-
 <h2>جدولي الأسبوعي 📅</h2>
-
 <p style="color:#71809b">اكتب أهم شيء عندك لكل يوم؛ يُحفظ تلقائيًا في حسابك.</p>
-
 <div id="schedule"></div>
-
 <div id="scheduleStatus" class="small" aria-live="polite"></div>
-
 </section>
-
 <section class="panel center">
-
 <h2>وقت التركيز ⏱️</h2>
-
 <div id="clock">25:00</div>
-
 <div class="tools" style="justify-content:center">
-
-<button id="start">ابدأ</button>
-
-<button id="pause">إيقاف مؤقت</button>
-
-<button id="reset">إعادة</button>
-
+<button id="start" type="button">ابدأ</button>
+<button id="pause" type="button">إيقاف مؤقت</button>
+<button id="reset" type="button">إعادة</button>
 </div>
-
 </section>
-
 </main>
 
 <script>
-
-(() => {
-
-  const SUPABASE_URL = 'https://dltmvqgjzttqmepkoabp.supabase.co';
-
-  const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_KflfgH_YXLqp0SKcaYTmOA_-yLeTAli';
-
-  const $ = id => document.getElementById(id);
-
-  const client = window.supabase.createClient(
-
-    SUPABASE_URL,
-
-    SUPABASE_PUBLISHABLE_KEY
-
-  );
-
-  let currentUser = null;
-
-  let tasks = [];
-
-  let scheduleTimers = {};
-
-  function setStatus(message, error = false) {
-
-    $('status').textContent = message;
-
-    $('status').style.color = error ? '#c0394b' : '#52627a';
-
-  }
-
-  function authError(error) {
-
-    const message = String(error?.message || '');
-
-    if (message.toLowerCase().includes('invalid login credentials'))
-
-      return 'البريد الإلكتروني أو كلمة المرور غير صحيحة.';
-
-    if (message.toLowerCase().includes('email not confirmed'))
-
-      return 'أكد بريدك الإلكتروني من الرسالة التي وصلتك.';
-
-    if (message.toLowerCase().includes('user already registered'))
-
-      return 'هذا البريد مسجل مسبقًا؛ جرّب تسجيل الدخول.';
-
-    return 'تعذّرت العملية: ' + message;
-
-  }
-
-  $('authForm').addEventListener('submit', async event => {
-
-    event.preventDefault();
-
-    const email = $('email').value.trim();
-
-    const password = $('password').value;
-
-    $('loginBtn').disabled = true;
-
-    setStatus('جارٍ تسجيل الدخول...');
-
-    try {
-
-      const { data, error } = await client.auth.signInWithPassword({
-
-        email, password
-
-      });
-
-      if (error) throw error;
-
-      setStatus('');
-
-      await showApp(data.user);
-
-    } catch (error) {
-
-      setStatus(authError(error), true);
-
-    } finally {
-
-      $('loginBtn').disabled = false;
-
-    }
-
-  });
-
-  $('signupBtn').addEventListener('click', async () => {
-
-    const email = $('email').value.trim();
-
-    const password = $('password').value;
-
-    if (!email || password.length < 6) {
-
-      setStatus('أدخل بريدًا صحيحًا وكلمة مرور من 6 أحرف على الأقل.', true);
-
-      return;
-
-    }
-
-    $('signupBtn').disabled = true;
-
-    setStatus('جارٍ إنشاء الحساب...');
-
-    try {
-
-      const { data, error } = await client.auth.signUp({
-
-        email,
-
-        password,
-
-        options: {
-
-          emailRedirectTo: location.origin + location.pathname
-
-        }
-
-      });
-
-      if (error) throw error;
-
-      if (data.session && data.user) {
-
-        setStatus('');
-
-        await showApp(data.user);
-
-      } else {
-
-        setStatus('تم إنشاء الحساب. افتح رسالة التأكيد في بريدك، ثم سجّل الدخول.');
-
-      }
-
-    } catch (error) {
-
-      setStatus(authError(error), true);
-
-    } finally {
-
-      $('signupBtn').disabled = false;
-
-    }
-
-  });
-
-  $('resetBtn').addEventListener('click', async () => {
-
-    const email = $('email').value.trim();
-
-    if (!email) {
-
-      setStatus('اكتب بريدك الإلكتروني أولًا.', true);
-
-      return;
-
-    }
-
-    try {
-
-      const { error } = await client.auth.resetPasswordForEmail(email, {
-
-        redirectTo: location.origin + location.pathname
-
-      });
-
-      if (error) throw error;
-
-      setStatus('إذا كان البريد مسجلًا، ستصلك رسالة لاستعادة كلمة المرور.');
-
-    } catch (error) {
-
-      setStatus(authError(error), true);
-
-    }
-
-  });
-
-  $('logoutBtn').addEventListener('click', async () => {
-
-    const { error } = await client.auth.signOut();
-
-    if (error) {
-
-      alert(authError(error));
-
-      return;
-
-    }
-
-    currentUser = null;
-
-    tasks = [];
-
-    $('app').style.display = 'none';
-
-    $('auth').style.display = 'block';
-
-    setStatus('تم تسجيل الخروج.');
-
-  });
-
-  async function showApp(user) {
-
-    currentUser = user;
-
-    $('auth').style.display = 'none';
-
-    $('app').style.display = 'block';
-
-    $('userEmail').textContent = user.email || 'حساب مُنجز';
-
-    await Promise.all([loadTasks(), loadSchedule()]);
-
-  }
-
-  async function loadTasks() {
-
-    $('tasks').innerHTML = '<div class="empty">جارٍ تحميل المهام...</div>';
-
-    const { data, error } = await client
-
-      .from('Tasks')
-
-      .select('id,text,done,created_at')
-
-      .order('created_at', { ascending: true });
-
-    if (error) {
-
-      $('tasks').innerHTML =
-
-        '<div class="empty">تعذّر تحميل المهام: ' +
-
-        escapeHtml(error.message) + '</div>';
-
-      return;
-
-    }
-
-    tasks = data || [];
-
-    renderTasks();
-
-  }
-
-  async function addTask(text) {
-
-    const { data, error } = await client
-
-      .from('Tasks')
-
-      .insert({
-
-        text,
-
-        done: false,
-
-        owner_id: currentUser.id
-
-      })
-
-      .select('id,text,done,created_at')
-
-      .single();
-
-    if (error) throw error;
-
-    tasks.push(data);
-
-    renderTasks();
-
-  }
-
-  async function toggleTask(id, done) {
-
-    const { error } = await client
-
-      .from('Tasks')
-
-      .update({ done })
-
-      .eq('id', id);
-
-    if (error) throw error;
-
-    const task = tasks.find(item => String(item.id) === String(id));
-
-    if (task) task.done = done;
-
-    renderTasks();
-
-  }
-
-  async function deleteTask(id) {
-
-    const { error } = await client
-
-      .from('Tasks')
-
-      .delete()
-
-      .eq('id', id);
-
-    if (error) throw error;
-
-    tasks = tasks.filter(item => String(item.id) !== String(id));
-
-    renderTasks();
-
-  }
-
-  function renderTasks() {
-
-    $('total').textContent = tasks.length;
-
-    $('completed').textContent = tasks.filter(t => t.done).length;
-
-    $('remaining').textContent = tasks.filter(t => !t.done).length;
-
-    $('tasks').innerHTML = '';
-
-    if (!tasks.length) {
-
-      $('tasks').innerHTML =
-
-        '<div class="empty">أضف أول مهمة وابدأ إنجازك ✨</div>';
-
-      return;
-
-    }
-
-    tasks.forEach(task => {
-
-      const row = document.createElement('div');
-
-      row.className = 'task' + (task.done ? ' done' : '');
-
-      const check = document.createElement('input');
-
-      check.type = 'checkbox';
-
-      check.checked = !!task.done;
-
-      check.addEventListener('change', async () => {
-
-        check.disabled = true;
-
-        try {
-
-          await toggleTask(task.id, check.checked);
-
-        } catch (error) {
-
-          alert('تعذّر تحديث المهمة: ' + error.message);
-
-          check.checked = !check.checked;
-
-        } finally {
-
-          check.disabled = false;
-
-        }
-
-      });
-
-      const span = document.createElement('span');
-
-      span.textContent = task.text;
-
-      const del = document.createElement('button');
-
-      del.className = 'del';
-
-      del.textContent = 'حذف';
-
-      del.addEventListener('click', async () => {
-
-        del.disabled = true;
-
-        try {
-
-          await deleteTask(task.id);
-
-        } catch (error) {
-
-          alert('تعذّر حذف المهمة: ' + error.message);
-
-          del.disabled = false;
-
-        }
-
-      });
-
-      row.append(check, span, del);
-
-      $('tasks').append(row);
-
-    });
-
-  }
-
-  $('taskForm').addEventListener('submit', async event => {
-
-    event.preventDefault();
-
-    const input = $('taskInput');
-
-    const text = input.value.trim();
-
-    if (!text || !currentUser) return;
-
-    const button = $('taskForm').querySelector('button');
-
-    button.disabled = true;
-
-    try {
-
-      await addTask(text);
-
-      input.value = '';
-
-    } catch (error) {
-
-      alert('تعذّرت إضافة المهمة: ' + error.message);
-
-    } finally {
-
-      button.disabled = false;
-
-    }
-
-  });
-
-  const days = [
-
-    'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء',
-
-    'الخميس', 'الجمعة', 'السبت'
-
-  ];
-
-  $('schedule').innerHTML = days.map(day =>
-
-    '<div style="display:flex;align-items:center;gap:10px;margin:9px 0">' +
-
-    '<label style="min-width:65px">' + day + '</label>' +
-
-    '<input data-day="' + day + '" placeholder="خطة اليوم..." ' +
-
-    'aria-label="خطة يوم ' + day + '">' +
-
-    '</div>'
-
-  ).join('');
-
-  async function loadSchedule() {
-
-    $('scheduleStatus').textContent = 'جارٍ تحميل الجدول...';
-
-    const { data, error } = await client
-
-      .from('UserSchedule')
-
-      .select('day,content');
-
-    if (error) {
-
-      $('scheduleStatus').textContent =
-
-        'تعذّر تحميل الجدول: ' + error.message;
-
-      return;
-
-    }
-
-    const values = Object.fromEntries(
-
-      (data || []).map(row => [row.day, row.content || ''])
-
-    );
-
-    document.querySelectorAll('[data-day]').forEach(input => {
-
-      input.value = values[input.dataset.day] || '';
-
-      input.addEventListener('input', () => {
-
-        const day = input.dataset.day;
-
-        clearTimeout(scheduleTimers[day]);
-
-        $('scheduleStatus').textContent = 'جارٍ الحفظ...';
-
-        scheduleTimers[day] = setTimeout(
-
-          () => saveSchedule(day, input.value), 700
-
-        );
-
-      });
-
-    });
-
-    $('scheduleStatus').textContent = 'تم تحميل جدولك.';
-
-  }
-
-  async function saveSchedule(day, content) {
-
-    const { error } = await client
-
-      .from('UserSchedule')
-
-      .upsert(
-
-        { owner_id: currentUser.id, day, content },
-
-        { onConflict: 'owner_id,day' }
-
-      );
-
-    $('scheduleStatus').textContent = error
-
-      ? 'تعذّر الحفظ: ' + error.message
-
-      : 'تم حفظ الجدول.';
-
-  }
-
-  function escapeHtml(value) {
-
-    return String(value).replace(/[&<>"']/g, char => ({
-
-      '&': '&amp;',
-
-      '<': '&lt;',
-
-      '>': '&gt;',
-
-      '"': '&quot;',
-
-      "'": '&#39;'
-
-    })[char]);
-
-  }
-
-  let seconds = 1500;
-
-  let timer = null;
-
-  function showTime() {
-
-    $('clock').textContent =
-
-      String(Math.floor(seconds / 60)).padStart(2, '0') + ':' +
-
-      String(seconds % 60).padStart(2, '0');
-
-  }
-
-  $('start').onclick = () => {
-
-    if (timer) return;
-
-    timer = setInterval(() => {
-
-      if (seconds > 0) {
-
-        seconds--;
-
-        showTime();
-
-      } else {
-
-        clearInterval(timer);
-
-        timer = null;
-
-        alert('أحسنت! انتهى وقت التركيز 🎉');
-
-      }
-
-    }, 1000);
-
-  };
-
-  $('pause').onclick = () => {
-
-    clearInterval(timer);
-
-    timer = null;
-
-  };
-
-  $('reset').onclick = () => {
-
-    clearInterval(timer);
-
-    timer = null;
-
-    seconds = 1500;
-
-    showTime();
-
-  };
-
-  client.auth.getSession().then(async ({ data, error }) => {
-
-    if (error) {
-
-      setStatus(authError(error), true);
-
-      return;
-
-    }
-
-    if (data.session?.user) {
-
-      await showApp(data.session.user);
-
-    }
-
-  });
-
-showTime();
-
-})();
-
-</script>
-
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js')
-      .catch(error => console.error('Service Worker:', error));
-  });
+(async function(){
+'use strict';
+
+const SUPABASE_URL='https://dltmvqgjzttqmepkoabp.supabase.co';
+const SUPABASE_KEY='sb_publishable_KflfgH_YXLqp0SKcaYTmOA_-yLeTAli';
+const $=id=>document.getElementById(id);
+let client=null,currentUser=null,tasks=[],timer=null,seconds=1500;
+const scheduleTimers={};
+
+function status(message,type='normal'){
+$('status').textContent=message;
+$('status').classList.toggle('error-text',type==='error');
+$('status').classList.toggle('success-text',type==='success');
 }
-</script>
+function scheduleStatus(message,error=false){
+$('scheduleStatus').textContent=message;
+$('scheduleStatus').classList.toggle('error-text',error);
+}
+function readableError(error){
+const m=String(error?.message||error?.error_description||error||'خطأ غير معروف');
+const l=m.toLowerCase();
+if(l.includes('invalid login credentials'))return 'البريد الإلكتروني أو كلمة المرور غير صحيحة.';
+if(l.includes('email not confirmed'))return 'أكد بريدك الإلكتروني من رسالة التأكيد أولًا.';
+if(l.includes('user already registered'))return 'هذا البريد مسجل مسبقًا؛ جرّب تسجيل الدخول.';
+if(l.includes('failed to fetch')||l.includes('network'))return 'تعذّر الاتصال. تحقق من الإنترنت وحاول مجددًا.';
+return 'تعذّرت العملية: '+m;
+}
+function busy(value){
+['loginBtn','signupBtn','resetBtn'].forEach(id=>$(id).disabled=value);
+}
+function loggedOut(){
+currentUser=null;tasks=[];
+$('app').style.display='none';
+$('auth').style.display='block';
+}
+async function loadLibrary(){
+if(window.supabase?.createClient)return;
+const urls=[
+'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
+'https://unpkg.com/@supabase/supabase-js@2'
+];
+let lastError;
+for(const url of urls){
+try{
+await new Promise((resolve,reject)=>{
+const s=document.createElement('script');
+s.src=url;s.async=true;
+s.onload=()=>window.supabase?.createClient?resolve():reject(new Error('مكتبة Supabase لم تعمل.'));
+s.onerror=()=>reject(new Error('تعذّر تحميل مكتبة تسجيل الدخول.'));
+document.head.appendChild(s);
+});
+return;
+}catch(e){lastError=e;}
+}
+throw lastError||new Error('تعذّر تحميل مكتبة الحسابات.');
+}
+async function login(event){
+event.preventDefault();
+if(!client)return status('خدمة الحسابات غير جاهزة. حدّث الصفحة.', 'error');
+if(!$('authForm').reportValidity())return;
+busy(true);status('جارٍ تسجيل الدخول...');
+try{
+const {data,error}=await client.auth.signInWithPassword({
+email:$('email').value.trim(),password:$('password').value
+});
+if(error)throw error;
+if(!data?.user||!data?.session)throw new Error('لم تُنشأ جلسة دخول. حاول مجددًا.');
+await showApp(data.user);
+status('');
+}catch(e){
+console.error('Login error:',e);
+loggedOut();status(readableError(e),'error');
+}finally{busy(false);}
+}
+async function signup(){
+if(!client)return status('خدمة الحسابات غير جاهزة. حدّث الصفحة.','error');
+const email=$('email').value.trim(),password=$('password').value;
+if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||password.length<6)
+return status('أدخل بريدًا صحيحًا وكلمة مرور من 6 أحرف على الأقل.','error');
+busy(true);status('جارٍ إنشاء الحساب...');
+try{
+const {data,error}=await client.auth.signUp({
+email,password,
+options:{emailRedirectTo:'https://vpmyvtzm6c-max.github.io/munjiz/'}
+});
+if(error)throw error;
+if(data.session&&data.user)await showApp(data.user);
+else status('تم إنشاء الحساب. افتح رسالة التأكيد في بريدك ثم سجّل الدخول.','success');
+}catch(e){status(readableError(e),'error');}
+finally{busy(false);}
+}
+async function resetPassword(){
+const email=$('email').value.trim();
+if(!email)return status('اكتب بريدك الإلكتروني أولًا.','error');
+$('resetBtn').disabled=true;
+try{
+const {error}=await client.auth.resetPasswordForEmail(email,{
+redirectTo:'https://vpmyvtzm6c-max.github.io/munjiz/'
+});
+if(error)throw error;
+status('إذا كان البريد مسجلًا، فستصلك رسالة لاستعادة كلمة المرور.','success');
+}catch(e){status(readableError(e),'error');}
+finally{$('resetBtn').disabled=false;}
+}
+async function logout(){
+$('logoutBtn').disabled=true;
+try{
+const {error}=await client.auth.signOut();
+if(error)throw error;
+loggedOut();status('تم تسجيل الخروج.');
+}catch(e){alert(readableError(e));}
+finally{$('logoutBtn').disabled=false;}
+}
+async function showApp(user){
+currentUser=user;
+$('auth').style.display='none';
+$('app').style.display='block';
+$('userEmail').textContent=user.email||'حساب مُنجز';
+await Promise.allSettled([loadTasks(),loadSchedule()]);
+}
+async function loadTasks(){
+$('tasks').textContent='جارٍ تحميل المهام...';
+const {data,error}=await client.from('Tasks').select('id,text,done,created_at').order('created_at',{ascending:true});
+if(error){$('tasks').textContent='تعذّر تحميل المهام: '+error.message;throw error;}
+tasks=Array.isArray(data)?data:[];
+renderTasks();
+}
+async function addTask(text){
+const {data,error}=await client.from('Tasks').insert({
+text,done:false,owner_id:currentUser.id
+}).select('id,text,done,created_at').single();
+if(error)throw error;
+tasks.push(data);renderTasks();
+}
+async function toggleTask(id,done){
+const {error}=await client.from('Tasks').update({done}).eq('id',id);
+if(error)throw error;
+const task=tasks.find(t=>String(t.id)===String(id));
+if(task)task.done=done;
+renderTasks();
+}
+async function deleteTask(id){
+const {error}=await client.from('Tasks').delete().eq('id',id);
+if(error)throw error;
+tasks=tasks.filter(t=>String(t.id)!==String(id));renderTasks();
+}
+function renderTasks(){
+$('total').textContent=tasks.length;
+$('completed').textContent=tasks.filter(t=>t.done).length;
+$('remaining').textContent=tasks.filter(t=>!t.done).length;
+$('tasks').replaceChildren();
+if(!tasks.length){
+const empty=document.createElement('div');
+empty.className='empty';empty.textContent='أضف أول مهمة وابدأ إنجازك ✨';
+$('tasks').append(empty);return;
+}
+tasks.forEach(task=>{
+const row=document.createElement('div');
+row.className='task'+(task.done?' done':'');
+const check=document.createElement('input');
+check.type='checkbox';check.checked=!!task.done;
+check.setAttribute('aria-label','تحديد المهمة كمكتملة');
+check.addEventListener('change',async()=>{
+const previous=!!task.done;check.disabled=true;
+try{await toggleTask(task.id,check.checked);}
+catch(e){alert('تعذّر تحديث المهمة: '+e.message);check.checked=previous;}
+finally{check.disabled=false;}
+});
+const span=document.createElement('span');span.textContent=task.text;
+const del=document.createElement('button');
+del.type='button';del.className='del';del.textContent='حذف';
+del.addEventListener('click',async()=>{
+del.disabled=true;
+try{await deleteTask(task.id);}
+catch(e){alert('تعذّر حذف المهمة: '+e.message);del.disabled=false;}
+});
+row.append(check,span,del);$('tasks').append(row);
+});
+}
+const days=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+function buildSchedule(){
+$('schedule').replaceChildren();
+days.forEach(day=>{
+const row=document.createElement('div');
+row.style.cssText='display:flex;align-items:center;gap:10px;margin:9px 0';
+const label=document.createElement('label');
+label.style.minWidth='65px';label.textContent=day;
+const input=document.createElement('input');
+input.dataset.day=day;input.placeholder='خطة اليوم...';
+input.setAttribute('aria-label','خطة يوم '+day);
+input.addEventListener('input',()=>{
+if(!currentUser)return;
+clearTimeout(scheduleTimers[day]);scheduleStatus('جارٍ الحفظ...');
+scheduleTimers[day]=setTimeout(()=>saveSchedule(day,input.value).catch(e=>scheduleStatus('تعذّر الحفظ: '+e.message,true)),700);
+});
+row.append(label,input);$('schedule').append(row);
+});
+}
+async function loadSchedule(){
+scheduleStatus('جارٍ تحميل الجدول...');
+const {data,error}=await client.from('UserSchedule').select('day,content');
+if(error){scheduleStatus('تعذّر تحميل الجدول: '+error.message,true);throw error;}
+const values=Object.fromEntries((data||[]).map(r=>[r.day,r.content||'']));
+document.querySelectorAll('[data-day]').forEach(input=>input.value=values[input.dataset.day]||'');
+scheduleStatus('تم تحميل جدولك.');
+}
+async function saveSchedule(day,content){
+const {error}=await client.from('UserSchedule').upsert(
+{owner_id:currentUser.id,day,content},{onConflict:'owner_id,day'}
+);
+if(error)throw error;
+scheduleStatus('تم حفظ الجدول.');
+}
+function showTime(){
+$('clock').textContent=String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');
+}
+function setupTimer(){
+$('start').addEventListener('click',()=>{
+if(timer)return;
+timer=setInterval(()=>{
+if(seconds>0){seconds--;showTime();}
+else{clearInterval(timer);timer=null;alert('أحسنت! انتهى وقت التركيز 🎉');}
+},1000);
+});
+$('pause').addEventListener('click',()=>{clearInterval(timer);timer=null;});
+$('reset').addEventListener('click',()=>{clearInterval(timer);timer=null;seconds=1500;showTime();});
+}
+$('authForm').addEventListener('submit',login);
+$('signupBtn').addEventListener('click',signup);
+$('resetBtn').addEventListener('click',resetPassword);
+$('logoutBtn').addEventListener('click',logout);
+$('taskForm').addEventListener('submit',async event=>{
+event.preventDefault();
+if(!currentUser)return status('سجّل الدخول أولًا.','error');
+const input=$('taskInput'),text=input.value.trim();
+if(!text)return;
+$('addTaskBtn').disabled=true;
+try{await addTask(text);input.value='';}
+catch(e){alert('تعذّرت إضافة المهمة: '+e.message);}
+finally{$('addTaskBtn').disabled=false;}
+});
+buildSchedule();setupTimer();
 
+try{
+status('جارٍ الاتصال بخدمة الحسابات...');
+await loadLibrary();
+client=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{
+auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
+});
+const {data,error}=await client.auth.getSession();
+if(error)throw error;
+if(data?.session?.user)await showApp(data.session.user);
+else status('أدخل بريدك الإلكتروني وكلمة المرور لتسجيل الدخول.');
+}catch(e){
+console.error('Munjiz setup error:',e);
+status('تعذّر تجهيز تسجيل الدخول: '+(e?.message||e)+' — حدّث الصفحة وحاول مجددًا.','error');
+}
+})();
+</script>
 </body>
 </html>
